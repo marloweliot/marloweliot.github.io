@@ -370,7 +370,7 @@ footer {
       birds.push({ x: rand() * W * 0.6, y: rand() * H, vx: Math.cos(a) * 1.4, vy: Math.sin(a) * 1.4 });
     }
   }
-  const VIEW = 46, SEP = 16, MAX = 2.1, MIN = 1.1;
+  const VIEW = 46, SEP = 16, MAX = 1.7, MIN = 0.9;
   function step() {
     for (const b of birds) {
       let ax = 0, ay = 0, cx = 0, cy = 0, vx = 0, vy = 0, sx = 0, sy = 0, n = 0;
@@ -416,12 +416,20 @@ footer {
       ctx.fillStyle = i === 0 ? acc : col; ctx.fill(); ctx.restore();
     });
   }
-  function loop() {
+  // fixed 60 steps per second, whatever the screen's refresh rate (120Hz phones and laptops ran double speed)
+  let raf = 0, last = 0, acc = 0;
+  const DT = 1000 / 60;
+  function loop(t) {
     if (!running) return;
-    step(); draw(); requestAnimationFrame(loop);
+    if (!last) last = t;
+    acc += Math.min(t - last, 100); last = t;
+    let n = 0;
+    while (acc >= DT && n < 4) { step(); acc -= DT; n++; }
+    if (n) draw();
+    raf = requestAnimationFrame(loop);
   }
-  function start() { if (!running && visible && !document.hidden && allow) { running = true; requestAnimationFrame(loop); } }
-  function stop() { running = false; }
+  function start() { if (!running && visible && !document.hidden && allow) { running = true; last = 0; acc = 0; raf = requestAnimationFrame(loop); } }
+  function stop() { running = false; cancelAnimationFrame(raf); }
 
   measure(); spawn();
   for (let i = 0; i < 160; i++) step(); // settle into flocks before first paint
