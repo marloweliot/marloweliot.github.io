@@ -159,10 +159,62 @@ footer {
   .entry, .skills div { grid-template-columns: 1fr; }
   .when, .skills dt { padding-top: 0; }
 }
+
+html { scroll-padding-top: 4.5rem; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+.topnav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  display: flex; align-items: center; gap: 1rem;
+  margin-inline: -20px; padding: 0.7rem 20px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent; transition: border-color 0.2s;
+  font-family: var(--sans);
+}
+.topnav.scrolled { border-bottom-color: var(--rule); }
+.topnav .brand {
+  font-family: var(--serif); font-weight: 600; font-size: 1.15rem; text-decoration: none;
+  white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+.topnav.scrolled .brand { opacity: 1; pointer-events: auto; }
+.navlinks {
+  display: flex; gap: 0.25rem; margin-left: auto; min-width: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.navlinks::-webkit-scrollbar { display: none; }
+.navlinks a {
+  font-size: 0.92rem; text-decoration: none; color: var(--muted);
+  padding: 0.35rem 0.7rem; border-radius: 999px; white-space: nowrap;
+}
+.navlinks a:hover { color: var(--ink); background: var(--band); }
+.navlinks a[aria-current="true"] { color: var(--ink); background: var(--band); font-weight: 600; }
+.navcv {
+  font-size: 0.9rem; font-weight: 500; text-decoration: none; white-space: nowrap;
+  padding: 0.4rem 0.9rem; border-radius: 999px; background: var(--ink); color: var(--bg);
+}
+.navcv:hover { background: var(--accent); }
+@media (max-width: 640px) {
+  .topnav { gap: 0.35rem; }
+  .topnav .brand { display: none; }
+  .navlinks { margin-left: 0; flex: 1; gap: 0; justify-content: space-between; }
+  .navlinks a { padding: 0.35rem 0.45rem; font-size: 0.84rem; }
+  .navcv { padding: 0.35rem 0.75rem; font-size: 0.84rem; }
+}
+@media (max-width: 380px) { .navlinks a { padding: 0.3rem 0.3rem; font-size: 0.8rem; } }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="topnav" id="topnav" aria-label="Sections">
+    <a class="brand" href="#top">Marlow Eliot</a>
+    <div class="navlinks">
+      <a href="#edu">Education</a>
+      <a href="#proj">Projects</a>
+      <a href="#exp">Experience</a>
+      <a href="#wri">Writing</a>
+    </div>
+    <a class="navcv" href="Marlow_Eliot_CV.pdf" target="_blank" rel="noopener">CV</a>
+  </nav>
   <div class="sky-wrap">
   <div class="sky">
     <canvas id="flock" aria-hidden="true"></canvas>
@@ -187,7 +239,7 @@ footer {
   <p class="sky-note"><span id="sky-hint">A boids flock from my flocking project. Move your cursor through it.</span> <button type="button" id="flock-play" hidden>Play the flock</button></p>
 
   <header class="hero">
-    <h1>Marlow Eliot</h1>
+    <h1 id="top">Marlow Eliot</h1>
     <p class="intro">MSc student in AI for Sustainable Development at UCL. I'm interested in applied machine learning and research, building systems that find structure in messy real-world data, and in helping governments regulate AI safely and keep pace with it.</p>
     <div class="links">
       <a class="btn primary" href="Marlow_Eliot_CV.pdf" target="_blank" rel="noopener">View my CV</a>
@@ -472,6 +524,24 @@ footer {
   }
   try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw); } catch (e) {}
   new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+</script>
+<script>
+(function () {
+  const nav = document.getElementById('topnav'), h1 = document.getElementById('top');
+  const links = [...nav.querySelectorAll('.navlinks a')];
+  const secs = links.map(a => document.getElementById(a.getAttribute('href').slice(1)).closest('section'));
+  const setActive = () => {
+    const y = window.scrollY + window.innerHeight * 0.3;
+    let cur = null;
+    secs.forEach((s, i) => { if (s.offsetTop <= y) cur = i; });
+    links.forEach((a, i) => a.setAttribute('aria-current', i === cur ? 'true' : 'false'));
+    if (cur !== null) { const a = links[cur]; const box = a.parentElement; if (a.offsetLeft < box.scrollLeft || a.offsetLeft + a.offsetWidth > box.scrollLeft + box.clientWidth) box.scrollTo({ left: a.offsetLeft - 8 }); }
+    nav.classList.toggle('scrolled', h1.getBoundingClientRect().bottom < 0);
+  };
+  window.addEventListener('scroll', setActive, { passive: true });
+  window.addEventListener('resize', setActive);
+  setActive();
 })();
 </script>
 </body>
