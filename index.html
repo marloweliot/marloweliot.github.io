@@ -370,7 +370,7 @@ footer {
       birds.push({ x: rand() * W * 0.6, y: rand() * H, vx: Math.cos(a) * 1.4, vy: Math.sin(a) * 1.4 });
     }
   }
-  const VIEW = 46, SEP = 16, MAX = 1.7, MIN = 0.9;
+  const VIEW = 46, SEP = 16, MAX = 0.85, MIN = 0.45;
   function step() {
     for (const b of birds) {
       let ax = 0, ay = 0, cx = 0, cy = 0, vx = 0, vy = 0, sx = 0, sy = 0, n = 0;
